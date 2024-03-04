@@ -1,37 +1,63 @@
 name: 'Update Images Data'
 
 on:
-  # push:
-  #   branches: 
-  #     - main
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 0 * * *' # on 00:00UTC everyday
   workflow_dispatch:
 
 jobs:
-  build:
+  update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
         with:
           version: 7.8.0
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 16
           cache: 'pnpm'
       - run: pnpm install 
       - name: Update Data
-        run: npm run update-data
+        run: |
+          mkdir ./dist
+          npm run update-data
+          {
+            echo 'IMGPATH_JSON<<EOF'
+            cat ./dist/img.json
+            echo ;
+            echo EOF
+          } >> $GITHUB_ENV
       - name: Commit
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'noreply@github.com'
           git add .
-          git commit -m "update images data"
+          git commit --allow-empty -m "update images data"
           git push
         env:
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Format:
+          #
+          #  * smtp://user:password@server:port
+          #  * smtp+starttls://user:password@server:port
+          connection_url: ${{secrets.MAIL_CONNECTION}}
+          # Required mail subject:
+          subject: 'Bing Daily Image (${{ fromJson(env.IMGPATH_JSON).img }})'
+          # Required recipients' addresses:
+          to: ${{secrets.TO_EMAIL}}
+          # Required sender full name (address can be skipped):
+          from: Github Actions # <user@example.com>
+          # Optional recipient of the email response:
+          reply_to: ${{secrets.REPLY_TO_EMAIL}}
+          # Optional plain body:
+          #body: Build job of ${{github.repository}} completed successfully!
+          # Optional HTML body read from file:
+          #html_body: file://README.html
+          attachments: './dist/${{ fromJson(env.IMGPATH_JSON).img }}'
 
 concurrency: 
   group: ${{ github.workflow }}

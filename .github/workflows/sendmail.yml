@@ -1,0 +1,19 @@
+name: 'Test sendmail'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sendmail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+           connection_url: ${{secrets.MAIL_CONNECTION}}
+           subject: 'Test for sendmail action'
+           to: ${{secrets.EMAIL_1}}
+           from: Github Actions
+           reply_to: ${{secrets.REPLY_TO_EMAIL}}
+           body: Test send email action successfully!
+           #html_body: file://README.html
