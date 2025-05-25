@@ -2,7 +2,7 @@ name: 'Update Images Data'
 
 on:
   schedule:
-    - cron: '0 0 */2 * *' # on 00:00UTC every 2 days
+    - cron: '0 0 * * *' # on 00:00UTC every day
   workflow_dispatch:
 
 jobs:
