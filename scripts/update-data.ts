@@ -17,13 +17,13 @@ fetch(endpoint)
 		};
 
 		const data = images
-			.filter((item) => !result.find(({ startdate }) => getChinaDate(item.fullstartdate) === startdate))
 			.map((item) => ({
 				startdate: getChinaDate(item.fullstartdate),
 				copyright: item.copyright,
 				urlbase: item.urlbase,
 				title: item.title,
-			}));
+			}))
+			.filter((item) => !result.find(({ startdate }) => item.startdate === startdate));
 
 		console.log('data: ', data);
 
